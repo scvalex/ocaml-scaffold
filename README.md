@@ -1,6 +1,14 @@
 Sample OCaml Project
 ====================
 
+Build tools
+-----------
+
+    # install opam
+    $ opam switch 4.02.3
+    $ eval $(opam config env)
+    $ opam install jenga
+
 Build
 -----
 
