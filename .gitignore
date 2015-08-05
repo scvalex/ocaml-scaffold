@@ -1,0 +1,10 @@
+/.jenga/
+/.jenga*
+/liblinks
+*.a
+*.cmi
+*.cmo
+*.cmx
+*.cmxa
+*.exe
+*.o

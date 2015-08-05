@@ -1,0 +1,3 @@
+((libraries (sample))
+ (external_libraries (async core))
+)
