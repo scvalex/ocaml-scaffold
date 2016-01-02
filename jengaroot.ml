@@ -14,8 +14,6 @@ let (^/) dir name = Path.relative ~dir name;;
 
 let (/^) = (^/);;
 
-let ocamlfind_wrap = Path.to_absolute_string (Path.the_root ^/ "ocamlfind-wrap")
-
 let basename = Path.basename;;
 
 let nothing_to_build_rules ~dir =
@@ -152,7 +150,7 @@ module Ocaml = struct
     let cmt_args =
       ["-bin-annot"; "-g"]
     in
-    Action.process ~dir ~prog:ocamlfind_wrap
+    Action.process ~dir ~prog:"ocamlfind"
       ~args:(List.concat [ ["ocamlopt"]; args; packages_args; pack_args; include_args
                          ; foreign_args; warning_args; syntax_args; cmt_args
                          ])
@@ -165,7 +163,7 @@ module Ocaml = struct
     let syntax_args =
       ["-syntax"; "camlp4o"]
     in
-    Action.process ~dir ~prog:ocamlfind_wrap
+    Action.process ~dir ~prog:"ocamlfind"
       ~args:(List.concat [ ["ocamldep"]; args; packages_args; syntax_args
                          ])
   ;;
