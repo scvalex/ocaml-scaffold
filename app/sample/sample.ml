@@ -2,8 +2,15 @@ open Core.Std
 open Async.Std
 open Sample_lib.Std
 
+type t = {
+  foo : int;
+  bar : string;
+} with sexp
+
 let main () =
   do_something_awesome ();
+  Print.printf "%s\n"
+    (Sexp.to_string_mach (sexp_of_t { foo = 23; bar = "alex"; }));
   Deferred.unit
 ;;
 
