@@ -14,6 +14,8 @@ let (^/) dir name = Path.relative ~dir name;;
 
 let (/^) = (^/);;
 
+let ocamlfind_wrap = Path.to_absolute_string (Path.the_root ^/ "ocamlfind-wrap")
+
 let basename = Path.basename;;
 
 let nothing_to_build_rules ~dir =
@@ -95,7 +97,7 @@ module Ocaml = struct
             Path.reach_from ~dir:liblinks_dir source
           in
           Action.process ~dir:liblinks_dir
-            ~prog:"ln" ~args:["-sf"; relative_source; "."]
+            ~prog:"ln" ~args:["-sf"; relative_source; "."] ()
         in
         Rule.create ~targets:[liblinks_dir ^/ file] link_file)
     ;;
@@ -107,8 +109,9 @@ module Ocaml = struct
   end
 
   let pp_packages =
-    [ "camlp4"; "sexplib.syntax"; "bin_prot.syntax"; "herelib.syntax"
-    ; "fieldslib.syntax"; "comparelib.syntax"; "variantslib.syntax"
+    [ "ppx_sexp_conv"; "ppx_bin_prot"; "ppx_here"
+    ; "ppx_fields_conv"; "ppx_compare"; "ppx_variants_conv"
+    ; "ppx_custom_printf"
     ]
   ;;
 
@@ -144,28 +147,26 @@ module Ocaml = struct
       in
       ["-w"; String.concat ~sep:"-" ("@A" :: ignored_warnings)]
     in
-    let syntax_args =
-      ["-syntax"; "camlp4o"]
+    let syntax_args = []
     in
     let cmt_args =
       ["-bin-annot"; "-g"]
     in
-    Action.process ~dir ~prog:"ocamlfind"
+    Action.process ~dir ~prog:ocamlfind_wrap
       ~args:(List.concat [ ["ocamlopt"]; args; packages_args; pack_args; include_args
                          ; foreign_args; warning_args; syntax_args; cmt_args
-                         ])
+                         ]) ()
   ;;
 
   let ocamldep ~dir ~args =
     let packages_args =
       ["-package"; String.concat ~sep:"," pp_packages]
     in
-    let syntax_args =
-      ["-syntax"; "camlp4o"]
+    let syntax_args = []
     in
-    Action.process ~dir ~prog:"ocamlfind"
+    Action.process ~dir ~prog:ocamlfind_wrap
       ~args:(List.concat [ ["ocamldep"]; args; packages_args; syntax_args
-                         ])
+                         ]) ()
   ;;
 
   let glob_ml ~dir =
@@ -207,14 +208,14 @@ module Ocaml = struct
 
     val foreign_libraries : t -> string list
 
-    val classic_libs : t -> string list
+    val classic_libraries : t -> string list
   end = struct
     type t = {
       libraries          : string list sexp_option;
       external_libraries : string list sexp_option;
       foreign_libraries  : string list sexp_option;
-      classic_libs      : string list sexp_option;
-    } with sexp
+      classic_libraries  : string list sexp_option;
+    } [@@deriving sexp]
 
     let load ~dir =
       Dep.contents (dir ^/ "mlbuild")
@@ -247,8 +248,8 @@ module Ocaml = struct
       Option.value ~default:[] t.foreign_libraries
     ;;
 
-    let classic_libs t =
-      Option.value ~default:[] t.classic_libs
+    let classic_libraries t =
+      Option.value ~default:[] t.classic_libraries
     ;;
 
   end
@@ -379,7 +380,7 @@ module Ocaml = struct
      `External external_libraries)
   ;;
 
-  let link_exe_rule ~dir ~libraries ~external_libraries ~foreign_libraries ~classic_libs ~exe names =
+  let link_exe_rule ~dir ~libraries ~external_libraries ~foreign_libraries ~classic_libraries ~exe names =
     let link_exe =
       Dep.all_unit (compiled_files_for ~dir names)
       *>>= fun () ->
@@ -402,7 +403,7 @@ module Ocaml = struct
         ~for_pack:None ~allow_unused_opens:false
         ~include_dirs:(Liblinks.include_dirs ~dir libraries)
         ~args:(List.concat
-                 [ List.map classic_libs ~f:(fun m -> m ^ ".cmxa")
+                 [ List.map classic_libraries ~f:(fun m -> m ^ ".cmxa")
                  ; [ "-linkpkg"
                    ; "-o"; basename exe
                    ]
@@ -510,13 +511,13 @@ module Ocaml = struct
       let external_libraries = Mlbuild.external_libraries mlbuild in
       let foreign_libraries = Mlbuild.foreign_libraries mlbuild in
       let libraries = Mlbuild.libraries mlbuild in
-      let classic_libs = Mlbuild.classic_libs mlbuild in
+      let classic_libraries = Mlbuild.classic_libraries mlbuild in
       let exe = dir ^/ (basename dir) ^ ".exe" in
       compile_mls_in_dir_rules ~dir ~libraries ~external_libraries ~for_pack:None
       *>>| fun (names, compile_mls_rules) ->
       List.concat
         [ [ Rule.default ~dir [Dep.path exe]
-          ; link_exe_rule ~dir ~libraries ~external_libraries ~foreign_libraries ~classic_libs ~exe names
+          ; link_exe_rule ~dir ~libraries ~external_libraries ~foreign_libraries ~classic_libraries ~exe names
           ]
         ; compile_mls_rules
         ])

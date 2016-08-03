@@ -5,7 +5,7 @@ open Sample_lib.Std
 type t = {
   foo : int;
   bar : string;
-} with sexp
+} [@@deriving sexp_of]
 
 let main () =
   do_something_awesome ();
