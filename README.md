@@ -45,6 +45,8 @@ mlbuild
       libraries          : string list sexp_option;
       (* ocamlfind libraries *)
       external_libraries : string list sexp_option;
-      (* other libraries to specify to the linker *)
+      (* other libraries to specify to the linker via -l *)
       foreign_libraries  : string list sexp_option;
+      (* non-ocamlfind ocaml libraries (.cmxa) to use *)
+      classic_libraries  : string list sexp_option;
     } with sexp
