@@ -5,11 +5,6 @@ let ( *>>= ) = Dep.bind;;
 
 let ( *>>| ) = Dep.map;;
 
-let message str =
-  print_endline ("!!jengaroot.ml: " ^ str)
-;;
-let _ = message;;
-
 let (^/) dir name = Path.relative ~dir name;;
 
 let (/^) = (^/);;
