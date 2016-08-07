@@ -5,7 +5,7 @@ Build tools
 -----------
 
     # install opam
-    $ opam switch 4.02.3
+    $ opam switch 4.03.0
     $ eval $(opam config env)
     $ opam install jenga
 
