@@ -1,7 +1,7 @@
 open Core.Std
 open Jenga_lib.Api
 
-let ( *>>= ) = Dep.bind;;
+let ( *>>= ) t f = Dep.bind t ~f;;
 
 let ( *>>| ) = Dep.map;;
 
@@ -484,9 +484,9 @@ module Ocaml = struct
   ;;
 
   let compile_mls_in_dir_rules ~dir ~libraries ~external_libraries ~for_pack =
-    Dep.glob_listing (glob_ml ~dir)
+    Dep.fs_glob_listing (glob_ml ~dir)
     *>>= fun mls ->
-    Dep.glob_listing (glob_mli ~dir)
+    Dep.fs_glob_listing (glob_mli ~dir)
     *>>| fun mlis ->
     let names =
       List.map mls ~f:(fun ml ->
@@ -548,12 +548,6 @@ let top_level_rules ~dir =
 ;;
 
 let scheme ~dir =
-  let is_mlbuild path =
-    match basename path with
-    | "mlbuild"  -> true
-    | "resbuild" -> true
-    | _          -> false
-  in
   let rules =
     if Path.(the_root = dir)
     then
@@ -565,8 +559,9 @@ let scheme ~dir =
       | "liblinks" -> Ocaml.liblinks_rules ~dir
       | _          -> nothing_to_build_rules ~dir
   in
-  Scheme.exclude is_mlbuild
-    (Scheme.rules_dep rules)
+  Scheme.all
+    [ Scheme.sources [ Path.relative ~dir "mlbuild"; Path.relative ~dir "resbuild" ]
+    ; (Scheme.rules_dep rules) ]
 ;;
 
 let setup () =
