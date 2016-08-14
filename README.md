@@ -15,6 +15,15 @@ Build
     make    # build once
     make p  # build and poll for changes
 
+Supported versions
+------------------
+
+The `master` branch targets the most recent recent OCaml compiler/Jenga in OPAM
+versions.  For previous versions of the compiler, see the tags.
+
+The Jenga available in jane-street/jenga is usually more recent than the one
+available in OPAM. Use the `latest` branch for that.
+
 Structure
 ---------
 
