@@ -561,7 +561,7 @@ let scheme ~dir =
   in
   Scheme.all
     [ Scheme.sources [ Path.relative ~dir "mlbuild"; Path.relative ~dir "resbuild" ]
-    ; (Scheme.rules_dep rules) ]
+    ; Scheme.rules_dep rules ]
 ;;
 
 let setup () =
